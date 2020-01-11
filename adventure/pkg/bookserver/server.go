@@ -43,14 +43,16 @@ var bookPageTemplate = `
 func buildBookPageHandler(bookData book.BookFile) http.HandlerFunc {
 
 	pageData := func(w http.ResponseWriter, r *http.Request) {
-		if val, ok := r.URL.Query()[queryParam]; ok {
-			queryParamValue := val[0]
+		queryParam := r.URL.Query()[queryParam][0]
+
+		if _, ok := bookData[queryParam]; ok {
+
 			t, err := template.New("home").Parse(bookPageTemplate)
 
 			if err != nil {
 				logger.Error.Println("Error creating default template")
 			}
-			t.Execute(w, bookData[queryParamValue])
+			t.Execute(w, bookData[queryParam])
 
 		} else {
 			http.Redirect(w, r, "/", http.StatusFound)
