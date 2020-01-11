@@ -1,0 +1,5 @@
+package storybook
+
+func LoadBook() {
+
+}

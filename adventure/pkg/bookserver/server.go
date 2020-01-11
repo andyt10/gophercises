@@ -1,0 +1,5 @@
+package bookserver
+
+func StartServer() {
+
+}
