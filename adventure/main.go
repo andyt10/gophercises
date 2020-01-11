@@ -5,6 +5,7 @@ import (
 	"cor_gophercises/adventure/pkg/logger"
 	bookloader "cor_gophercises/adventure/pkg/storybook"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 )
@@ -19,7 +20,14 @@ func main() {
 	bookName := parseArgs()
 	logger.Info.Println("Using Book File:", bookName)
 
-	bookloader.LoadBook(bookName)
+	err, bookData := bookloader.LoadBook(bookName)
+
+	if err != nil {
+		logger.Error.Println("Exiting due to book read error.")
+		os.Exit(1)
+	}
+
+	fmt.Println(bookData)
 
 	server.StartServer()
 

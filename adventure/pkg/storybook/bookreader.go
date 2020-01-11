@@ -3,7 +3,6 @@ package storybook
 import (
 	"cor_gophercises/adventure/pkg/logger"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 )
@@ -29,8 +28,7 @@ func LoadBook(fileName string) (error, *BookFile) {
 	bookFile, fileReadError := os.Open(fileName)
 
 	if fileReadError != nil {
-		logger.Error.Println("Error opening book file:", fileName)
-		logger.Error.Println(fileReadError.Error())
+		logger.Error.Println("Error opening book file:", fileName, ":", fileReadError)
 		return fileReadError, nil
 	}
 
@@ -39,12 +37,9 @@ func LoadBook(fileName string) (error, *BookFile) {
 	jsonParseError := json.Unmarshal(bookFileData, &bookData)
 
 	if jsonParseError != nil {
-		logger.Error.Println("Error opening book file:", fileName)
-		logger.Error.Println(jsonParseError)
+		logger.Error.Println("Error parsing book file:", fileName, ":", jsonParseError)
 		return jsonParseError, nil
 	}
 
-	fmt.Println(bookData)
-
-	return nil, nil
+	return nil, &bookData
 }
