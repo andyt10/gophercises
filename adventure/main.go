@@ -3,6 +3,7 @@ package main
 import (
 	server "cor_gophercises/adventure/pkg/bookserver"
 	"cor_gophercises/adventure/pkg/logger"
+	bookloader "cor_gophercises/adventure/pkg/storybook"
 	"flag"
 	"io/ioutil"
 	"os"
@@ -14,23 +15,19 @@ func main() {
 	//3. Serve Book
 	logger.Init(ioutil.Discard, os.Stdout, os.Stdout, os.Stdout)
 
-	/*
-		logger.Info.Println("Starting CYOA book")
+	logger.Info.Println("Starting CYOA book")
 
-		bookName := parseArgs()
-		logger.Info.Println("Using Book File:", bookName)
+	bookName := parseArgs()
+	logger.Info.Println("Using Book File:", bookName)
 
-		err, bookData := bookloader.LoadBook(bookName)
+	err, bookData := bookloader.LoadBook(bookName)
 
-		if err != nil {
-			logger.Error.Println("Exiting due to book read error.")
-			os.Exit(1)
-		}
+	if err != nil {
+		logger.Error.Println("Exiting due to book read error.")
+		os.Exit(1)
+	}
 
-		fmt.Println(bookData)
-	*/
-
-	server.StartServer()
+	server.StartServer(*bookData)
 
 }
 
