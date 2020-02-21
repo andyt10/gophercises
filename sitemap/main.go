@@ -13,7 +13,7 @@ func main() {
 
 	site, depth := parseArgs()
 
-	fmt.Println(site, depth)
+	fmt.Println("Mapping Site:", site, "To a depth of:", depth, "links")
 }
 
 func parseArgs() (string, int) {
