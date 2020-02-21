@@ -28,7 +28,7 @@ func TestFile1(t *testing.T) {
 
 func TestFile2(t *testing.T) {
 	fileName := "tests/test2.html"
-	expected := []link{{Href: "https://www.twitter.com/joncalhoun", Text: "Check me out on twitter"}, {Href: "https://github.com/gophercises", Text: "Gophercises is on"}} // Github!
+	expected := []link{{Href: "https://www.twitter.com/joncalhoun", Text: "Check me out on twitter"}, {Href: "https://github.com/gophercises", Text: "Gophercises is on Github!"}} // Github!
 
 	file, _ := openSource(fileName)
 	actual := loadSource(file)

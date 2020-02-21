@@ -50,8 +50,7 @@ func loadSource(reader *io.Reader) []link {
 
 func sanatiseLinktext(linkText string) string {
 	noNewLines := strings.Replace(linkText, "\n", "", -1)
-	trimmed := strings.Trim(noNewLines, " ")
-	return trimmed
+	return noNewLines
 }
 
 func handleANode(n *html.Node) link {
@@ -59,11 +58,29 @@ func handleANode(n *html.Node) link {
 	var newLink link
 	for _, a := range n.Attr {
 		if a.Key == "href" {
-			newLink = link{Href: a.Val, Text: sanatiseLinktext(n.FirstChild.Data)}
+			newLink = link{Href: a.Val, Text: strings.Trim(getAText(n, ""), " ")}
 			break
 		}
 	}
 	return newLink
+}
+
+func getAText(n *html.Node, linkText string) string {
+	if n.Type == html.TextNode {
+		fmt.Println(n.Data)
+		return sanatiseLinktext(n.Data)
+	}
+
+	if n.Type != html.ElementNode {
+		return ""
+	}
+
+	var new string
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		new += getAText(c, linkText)
+	}
+
+	return new
 }
 
 func recursiveParse(n *html.Node, links []link) []link {
