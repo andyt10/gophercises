@@ -5,6 +5,9 @@ import (
 	"testing"
 )
 
+// *******************
+// TEST URL FORMATTING
+// *******************
 func TestUrl1(t *testing.T) {
 	url := "https://www.google.com"
 	expected := urlParts{proto: "https", domain: "google.com", resource: "/"}
@@ -99,4 +102,23 @@ func TestUrl12(t *testing.T) {
 
 	actual := noramliseAddress(url)
 	assert.Equal(t, expected, actual)
+}
+
+// *******************
+// TEST SAME SITE TEST
+// *******************
+
+func TestIsSame1(t *testing.T) {
+	link := urlParts{proto: "https", domain: "google.com", resource: "/some/other/resource?val=key"}
+	site := urlParts{proto: "https", domain: "google.com", resource: "/some/oasdsa?adsdsds=dasd"}
+
+	assert.True(t, isLinkSameWebsite(link, site))
+
+}
+
+func TestIsSame2(t *testing.T) {
+	link := urlParts{proto: "https", domain: "", resource: "/some/other/resource?val=key"}
+	site := urlParts{proto: "https", domain: "google.com", resource: "/some/oasdsa?adsdsds=dasd"}
+
+	assert.True(t, isLinkSameWebsite(link, site))
 }

@@ -75,7 +75,19 @@ func noramliseAddress(url string) urlParts {
 }
 
 func isLinkSameWebsite(linkData urlParts, site urlParts) bool {
-	return true
+	//It's the same site IF
+	// domain value in linkData is ""
+	// domain in linkData == domain in site
+
+	if linkData.domain == site.domain {
+		return true
+	}
+
+	if linkData.domain == "" {
+		return true
+	}
+
+	return false
 }
 
 func getPage(pageUrl string) (io.Reader, error) {
