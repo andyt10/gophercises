@@ -28,6 +28,12 @@ func openSource(fileLoc string) (*io.Reader, error) {
 
 }
 
+func ExtractLinksFromString(stringBody string) []link {
+	//_ := strings.NewReader(stringBody)
+	//ExtractLinks(&reader)
+	return nil
+}
+
 func ExtractLinks(reader *io.Reader) []link {
 
 	node, err := html.Parse(*reader)
@@ -61,7 +67,6 @@ func handleANode(n *html.Node) link {
 
 func getAText(n *html.Node, linkText string) string {
 	if n.Type == html.TextNode {
-		fmt.Println(n.Data)
 		return sanatiseLinktext(n.Data)
 	}
 
