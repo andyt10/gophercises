@@ -11,10 +11,6 @@ import (
 	"strings"
 )
 
-func main() {
-	doRun()
-}
-
 type urlParts struct {
 	proto    string
 	domain   string
@@ -31,6 +27,13 @@ type xmlUrl struct {
 type urlSet struct {
 	UrlSet []xmlUrl `xml:"url"`
 	Xmlns  string   `xml:"xmlns,attr"`
+}
+
+//*********
+// Main Funcs
+//*********
+func main() {
+	doRun()
 }
 
 func doRun() {
@@ -56,6 +59,19 @@ func doRun() {
 	//fmt.Println("Mapping Site:", site, "To a depth of:", depth, "links")
 }
 
+func parseArgs() (string, int) {
+
+	maxDepth := flag.Int("max-depth", 3, "Max number of links to follow in a site before stopping.")
+	siteName := flag.String("site-name", "", "A site to create a map for.")
+	flag.Parse()
+
+	return *siteName, *maxDepth
+
+}
+
+// *********
+// XML Stuff
+// *********
 func buildMapXml(links []link.ExtractedLink) ([]byte, error) {
 
 	xmlUrls := make([]xmlUrl, len(links))
@@ -76,6 +92,9 @@ func buildMapXml(links []link.ExtractedLink) ([]byte, error) {
 
 }
 
+// ***********************
+// URL/Address Formatting
+// ***********************
 func noramliseAddress(url string) urlParts {
 	//lower case it all
 	//take http/https if present, put in 'proto' value (take everything before ://)
@@ -123,6 +142,9 @@ func isLinkSameWebsite(linkData urlParts, site urlParts) bool {
 	return false
 }
 
+// **************
+// Website Traversal
+// **************
 func getPage(pageUrl string) (io.Reader, error) {
 
 	resp, err := http.Get(pageUrl)
@@ -134,14 +156,4 @@ func getPage(pageUrl string) (io.Reader, error) {
 
 	//defer resp.Body.Close()
 	return resp.Body, nil
-}
-
-func parseArgs() (string, int) {
-
-	maxDepth := flag.Int("max-depth", 3, "Max number of links to follow in a site before stopping.")
-	siteName := flag.String("site-name", "", "A site to create a map for.")
-	flag.Parse()
-
-	return *siteName, *maxDepth
-
 }
