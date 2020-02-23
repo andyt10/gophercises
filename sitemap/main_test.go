@@ -1,7 +1,6 @@
 package main
 
 import (
-	"cor_gophercises/sitemap/pkg/link"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -112,16 +111,24 @@ func TestUrl12(t *testing.T) {
 func TestIsSame1(t *testing.T) {
 	link := urlParts{proto: "https", domain: "google.com", resource: "/some/other/resource?val=key"}
 	site := urlParts{proto: "https", domain: "google.com", resource: "/some/oasdsa?adsdsds=dasd"}
+	expectedUrl := "https://google.com/some/other/resource?val=key"
 
-	assert.True(t, isLinkSameWebsite(link, site))
+	maybeUrl, isSameSite := isLinkSameWebsite(link, site)
+
+	assert.True(t, isSameSite, "Should have been same site, was not.")
+	assert.Equal(t, expectedUrl, maybeUrl, "URL returned was not formmated correctly")
 
 }
 
 func TestIsSame2(t *testing.T) {
 	link := urlParts{proto: "https", domain: "", resource: "/some/other/resource?val=key"}
 	site := urlParts{proto: "https", domain: "google.com", resource: "/some/oasdsa?adsdsds=dasd"}
+	expectedUrl := "https://google.com/some/other/resource?val=key"
 
-	assert.True(t, isLinkSameWebsite(link, site))
+	maybeUrl, isSameSite := isLinkSameWebsite(link, site)
+
+	assert.True(t, isSameSite, "Should have been same site, was not.")
+	assert.Equal(t, expectedUrl, maybeUrl, "URL returned was not formmated correctly")
 }
 
 // *******************
@@ -129,9 +136,9 @@ func TestIsSame2(t *testing.T) {
 // *******************
 
 func TestBuildXml1(t *testing.T) {
-	links := []link.ExtractedLink{{Href: "https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security", Text: "HSTS"}, {Href: "https://twitter.com/neverssl?ref_src=twsrc%5Etfw", Text: "Follow @neverssl"}}
+	links := []string{"https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security", "https://twitter.com/neverssl?ref_src=twsrc%5Etfw"}
 	expected := `<urlSet xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security</loc></url><url><loc>https://twitter.com/neverssl?ref_src=twsrc%5Etfw</loc></url></urlSet>`
-	actual, err := buildMapXml(links, false)
+	actual, err := buildSiteMapXml(links, false)
 
 	if err != nil {
 		assert.Fail(t, "Returned error for XLM Marshall:", err)

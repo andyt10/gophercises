@@ -72,12 +72,12 @@ func parseArgs() (string, int) {
 // *********
 // XML Stuff
 // *********
-func buildMapXml(links []link.ExtractedLink, shouldIndent bool) ([]byte, error) {
+func buildSiteMapXml(links []string, shouldIndent bool) ([]byte, error) {
 
 	xmlUrls := make([]xmlUrl, len(links))
 
 	for i, v := range links {
-		xmlUrls[i].Loc = v.Href
+		xmlUrls[i].Loc = v
 	}
 
 	xmlData := urlSet{UrlSet: xmlUrls, Xmlns: namespaceConst}
@@ -135,20 +135,25 @@ func noramliseAddress(url string) urlParts {
 
 }
 
-func isLinkSameWebsite(linkData urlParts, site urlParts) bool {
+/* Determines if a link is for the same (current trawling) website.
+* IF it is, then return a 'fully formatted string' of the link, which is valid for a sitemap. (also return right true)
+ */
+func isLinkSameWebsite(linkData urlParts, site urlParts) (string, bool) {
 	//It's the same site IF
 	// domain value in linkData is "" (relative link)
 	// domain in linkData == domain in site
 
 	if linkData.domain == site.domain {
-		return true
+		formattedUrl := fmt.Sprintf("%v://%v%v", site.proto, site.domain, linkData.resource)
+		return formattedUrl, true
 	}
 
 	if linkData.domain == "" {
-		return true
+		formattedUrl := fmt.Sprintf("%v://%v%v", site.proto, site.domain, linkData.resource)
+		return formattedUrl, true
 	}
 
-	return false
+	return "", false
 }
 
 // **************
