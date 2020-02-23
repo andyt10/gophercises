@@ -1,7 +1,9 @@
 package main
 
 import (
+	"cor_gophercises/sitemap/pkg/link"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 )
 
@@ -121,4 +123,21 @@ func TestIsSame2(t *testing.T) {
 	site := urlParts{proto: "https", domain: "google.com", resource: "/some/oasdsa?adsdsds=dasd"}
 
 	assert.True(t, isLinkSameWebsite(link, site))
+}
+
+// *******************
+// TEST BUILD XML
+// *******************
+
+func TestBuildXml1(t *testing.T) {
+	links := []link.ExtractedLink{{Href: "https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security", Text: "HSTS"}, {Href: "https://twitter.com/neverssl?ref_src=twsrc%5Etfw", Text: "Follow @neverssl"}}
+	expected := ""
+	actual, err := buildMapXml(links)
+
+	if err != nil {
+		assert.Fail(t, "Returned error for XLM Marshall:", err)
+	}
+
+	os.Stdout.Write(actual)
+	assert.Equal(t, expected, actual, "XML returned for Site Map was not as expected.")
 }

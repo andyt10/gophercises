@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/html"
 )
 
-type link struct {
+type ExtractedLink struct {
 	Href string
 	Text string
 }
@@ -28,13 +28,13 @@ func openSource(fileLoc string) (*io.Reader, error) {
 
 }
 
-func ExtractLinksFromString(stringBody string) []link {
+func ExtractLinksFromString(stringBody string) []ExtractedLink {
 	//_ := strings.NewReader(stringBody)
 	//ExtractLinks(&reader)
 	return nil
 }
 
-func ExtractLinks(reader *io.Reader) []link {
+func ExtractLinks(reader *io.Reader) []ExtractedLink {
 
 	node, err := html.Parse(*reader)
 
@@ -43,7 +43,7 @@ func ExtractLinks(reader *io.Reader) []link {
 		os.Exit(1)
 	}
 
-	var linksList = make([]link, 0)
+	var linksList = make([]ExtractedLink, 0)
 	linksList = recursiveParse(node, linksList)
 	return linksList
 }
@@ -53,12 +53,12 @@ func sanatiseLinktext(linkText string) string {
 	return noNewLines
 }
 
-func handleANode(n *html.Node) link {
+func handleANode(n *html.Node) ExtractedLink {
 
-	var newLink link
+	var newLink ExtractedLink
 	for _, a := range n.Attr {
 		if a.Key == "href" {
-			newLink = link{Href: a.Val, Text: strings.Trim(getAText(n, ""), " ")}
+			newLink = ExtractedLink{Href: a.Val, Text: strings.Trim(getAText(n, ""), " ")}
 			break
 		}
 	}
@@ -82,7 +82,7 @@ func getAText(n *html.Node, linkText string) string {
 	return new
 }
 
-func recursiveParse(n *html.Node, links []link) []link {
+func recursiveParse(n *html.Node, links []ExtractedLink) []ExtractedLink {
 
 	if n.Type == html.ElementNode && n.Data == "a" {
 		newLink := handleANode(n)

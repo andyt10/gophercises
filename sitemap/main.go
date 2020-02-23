@@ -2,6 +2,7 @@ package main
 
 import (
 	"cor_gophercises/sitemap/pkg/link"
+	"encoding/xml"
 	"flag"
 	"fmt"
 	"io"
@@ -11,13 +12,25 @@ import (
 )
 
 func main() {
-
+	doRun()
 }
 
 type urlParts struct {
 	proto    string
 	domain   string
 	resource string
+}
+
+const namespaceConst string = "http://www.sitemaps.org/schemas/sitemap/0.9"
+
+type xmlUrl struct {
+	XMLName xml.Name `xml:"url"`
+	Loc     string   `xml:"loc"`
+}
+
+type urlSet struct {
+	UrlSet []xmlUrl `xml:"url"`
+	Xmlns  string   `xml:"xmlns,attr"`
 }
 
 func doRun() {
@@ -41,6 +54,26 @@ func doRun() {
 	//site, depth := parseArgs()
 
 	//fmt.Println("Mapping Site:", site, "To a depth of:", depth, "links")
+}
+
+func buildMapXml(links []link.ExtractedLink) ([]byte, error) {
+
+	xmlUrls := make([]xmlUrl, len(links))
+
+	for i, v := range links {
+		xmlUrls[i].Loc = v.Href
+	}
+
+	xmlData := urlSet{UrlSet: xmlUrls, Xmlns: namespaceConst}
+
+	output, err := xml.MarshalIndent(xmlData, "  ", "    ")
+	if err != nil {
+		fmt.Printf("Error Mashalling XML Site Map: %v\n", err)
+		return nil, err
+	}
+
+	return output, nil
+
 }
 
 func noramliseAddress(url string) urlParts {
@@ -76,7 +109,7 @@ func noramliseAddress(url string) urlParts {
 
 func isLinkSameWebsite(linkData urlParts, site urlParts) bool {
 	//It's the same site IF
-	// domain value in linkData is ""
+	// domain value in linkData is "" (relative link)
 	// domain in linkData == domain in site
 
 	if linkData.domain == site.domain {
