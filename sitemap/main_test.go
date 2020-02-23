@@ -137,7 +137,5 @@ func TestBuildXml1(t *testing.T) {
 	if err != nil {
 		assert.Fail(t, "Returned error for XLM Marshall:", err)
 	}
-
-	os.Stdout.Write(actual)
 	assert.Equal(t, expected, string(actual), "XML returned for Site Map was not as expected.")
 }
