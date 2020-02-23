@@ -131,13 +131,13 @@ func TestIsSame2(t *testing.T) {
 
 func TestBuildXml1(t *testing.T) {
 	links := []link.ExtractedLink{{Href: "https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security", Text: "HSTS"}, {Href: "https://twitter.com/neverssl?ref_src=twsrc%5Etfw", Text: "Follow @neverssl"}}
-	expected := ""
-	actual, err := buildMapXml(links)
+	expected := `<urlSet xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security</loc></url><url><loc>https://twitter.com/neverssl?ref_src=twsrc%5Etfw</loc></url></urlSet>`
+	actual, err := buildMapXml(links, false)
 
 	if err != nil {
 		assert.Fail(t, "Returned error for XLM Marshall:", err)
 	}
 
 	os.Stdout.Write(actual)
-	assert.Equal(t, expected, actual, "XML returned for Site Map was not as expected.")
+	assert.Equal(t, expected, string(actual), "XML returned for Site Map was not as expected.")
 }

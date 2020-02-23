@@ -72,7 +72,7 @@ func parseArgs() (string, int) {
 // *********
 // XML Stuff
 // *********
-func buildMapXml(links []link.ExtractedLink) ([]byte, error) {
+func buildMapXml(links []link.ExtractedLink, shouldIndent bool) ([]byte, error) {
 
 	xmlUrls := make([]xmlUrl, len(links))
 
@@ -81,11 +81,20 @@ func buildMapXml(links []link.ExtractedLink) ([]byte, error) {
 	}
 
 	xmlData := urlSet{UrlSet: xmlUrls, Xmlns: namespaceConst}
+	fmt.Println(xmlData)
 
-	output, err := xml.MarshalIndent(xmlData, "  ", "    ")
-	if err != nil {
-		fmt.Printf("Error Mashalling XML Site Map: %v\n", err)
-		return nil, err
+	var output []byte
+	var marshalError error
+
+	if shouldIndent {
+		output, marshalError = xml.MarshalIndent(xmlData, "  ", "    ")
+	} else {
+		output, marshalError = xml.Marshal(xmlData)
+	}
+
+	if marshalError != nil {
+		fmt.Printf("Error Mashalling XML Site Map: %v\n", marshalError)
+		return nil, marshalError
 	}
 
 	return output, nil
