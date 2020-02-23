@@ -3,7 +3,6 @@ package main
 import (
 	"cor_gophercises/sitemap/pkg/link"
 	"github.com/stretchr/testify/assert"
-	"os"
 	"testing"
 )
 
