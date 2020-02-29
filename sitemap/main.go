@@ -2,10 +2,12 @@ package main
 
 import (
 	"cor_gophercises/sitemap/pkg/link"
+	"cor_gophercises/sitemap/pkg/logger"
 	"encoding/xml"
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -33,13 +35,14 @@ type urlSet struct {
 // Main Funcs
 //*********
 func main() {
+	logger.Init(ioutil.Discard, os.Stdout, os.Stdout, os.Stdout)
 	//rootUrl := "http://dcbfthwkrvlmznxs.neverssl.com/online"
 	rootUrl := "https://gophercises.com"
-	maxDepth := 2
+	maxDepth := 4
 	siteMap, err := doRun(noramliseAddress(rootUrl), maxDepth)
 
 	if err != nil {
-		fmt.Println("ERROR in SiteMap building:", err)
+		logger.Error.Println("ERROR in SiteMap building:", err)
 		os.Exit(1)
 	}
 
@@ -56,7 +59,7 @@ func doRun(rootSite urlParts, maxDepth int) (string, error) {
 	siteMap, mapBuildErr := buildSiteMapXml(siteMapData, true)
 
 	if mapBuildErr != nil {
-		fmt.Println("Unable to build map for site data")
+		logger.Error.Println("Unable to build map for site data")
 		return "", mapBuildErr
 	}
 
@@ -69,21 +72,21 @@ func doRunAux(pageToGet urlParts, rootSite urlParts, currentDepth int, maxDepth 
 	newPageUrlString := makeUrlString(handleRelativeLinks(pageToGet, rootSite))
 
 	if currentDepth > maxDepth {
-		fmt.Println("Already navigated as far as desired, returning existing sitemap")
+		logger.Trace.Println("Already navigated as far as desired, returning existing sitemap")
 		return siteMapData
 	}
 
 	if !isLinkSameWebsite(pageToGet, rootSite) {
-		fmt.Println("Link is not for same site, not performing GET call")
+		logger.Trace.Println("Link is not for same site, not performing GET call")
 		return siteMapData
 	}
 
 	if siteMapData[newPageUrlString] {
-		fmt.Println("Already visited link, returning")
+		logger.Trace.Println("Already visited link, returning")
 		return siteMapData
 	}
 
-	fmt.Println("PAGE TO BE ADDED:", newPageUrlString, currentDepth)
+	logger.Info.Println("PAGE TO BE ADDED:", newPageUrlString, currentDepth)
 	siteMapData[newPageUrlString] = true
 
 	//Query site, and parse links. Returning sitemap
@@ -96,11 +99,9 @@ func doRunAux(pageToGet urlParts, rootSite urlParts, currentDepth int, maxDepth 
 	}
 
 	for _, v := range pageLinks {
-		if isLinkSameWebsite(v, rootSite) {
-			newDepth := currentDepth + 1
-			siteMapData = doRunAux(v, rootSite, newDepth, maxDepth, siteMapData)
+		newDepth := currentDepth + 1
+		siteMapData = doRunAux(v, rootSite, newDepth, maxDepth, siteMapData)
 
-		}
 	}
 
 	return siteMapData
@@ -244,7 +245,7 @@ func getPage(pageUrl string) (io.Reader, error) {
 	resp, err := http.Get(pageUrl)
 
 	if err != nil {
-		fmt.Println("Error GET-ing page:", pageUrl, ":", err)
+		logger.Error.Println("Error GET-ing page:", pageUrl, ":", err)
 		return nil, err
 	}
 
