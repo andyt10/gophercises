@@ -38,7 +38,7 @@ func main() {
 	logger.Init(ioutil.Discard, os.Stdout, os.Stdout, os.Stdout)
 	//rootUrl := "http://dcbfthwkrvlmznxs.neverssl.com/online"
 	rootUrl := "https://gophercises.com"
-	maxDepth := 4
+	maxDepth := 3
 	siteMap, err := doRun(noramliseAddress(rootUrl), maxDepth)
 
 	if err != nil {
@@ -54,7 +54,7 @@ func doRun(rootSite urlParts, maxDepth int) (string, error) {
 
 	var siteMapData = make(map[string]bool)
 
-	siteMapData = doRunAux(rootSite, rootSite, 1, maxDepth, siteMapData)
+	siteMapData = doRunAux(rootSite, rootSite, 0, maxDepth, siteMapData)
 
 	siteMap, mapBuildErr := buildSiteMapXml(siteMapData, true)
 
@@ -90,16 +90,16 @@ func doRunAux(pageToGet urlParts, rootSite urlParts, currentDepth int, maxDepth 
 	siteMapData[newPageUrlString] = true
 
 	//Query site, and parse links. Returning sitemap
-	pageBody, getParseErr := getPage(makeUrlString(rootSite))
+	pageBody, getParseErr := getPage(newPageUrlString)
 	pageLinks := getLinksInPage(pageBody)
+	newDepth := currentDepth + 1
 
 	if getParseErr != nil {
-		fmt.Println("Error getting page:", makeUrlString(pageToGet), ":", getParseErr)
+		logger.Error.Println("Error getting page:", makeUrlString(pageToGet), ":", getParseErr)
 		return siteMapData
 	}
 
 	for _, v := range pageLinks {
-		newDepth := currentDepth + 1
 		siteMapData = doRunAux(v, rootSite, newDepth, maxDepth, siteMapData)
 
 	}
