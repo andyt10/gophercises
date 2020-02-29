@@ -33,7 +33,8 @@ type urlSet struct {
 // Main Funcs
 //*********
 func main() {
-	rootUrl := "http://dcbfthwkrvlmznxs.neverssl.com/online"
+	//rootUrl := "http://dcbfthwkrvlmznxs.neverssl.com/online"
+	rootUrl := "https://gophercises.com"
 	maxDepth := 2
 	siteMap, err := doRun(noramliseAddress(rootUrl), maxDepth)
 
@@ -48,9 +49,10 @@ func main() {
 
 func doRun(rootSite urlParts, maxDepth int) (string, error) {
 
-	var siteMapData []string
+	var siteMapData = make(map[string]bool)
 
 	siteMapData = doRunAux(rootSite, rootSite, 1, maxDepth, siteMapData)
+
 	siteMap, mapBuildErr := buildSiteMapXml(siteMapData, true)
 
 	if mapBuildErr != nil {
@@ -62,11 +64,11 @@ func doRun(rootSite urlParts, maxDepth int) (string, error) {
 
 }
 
-func doRunAux(pageToGet urlParts, rootSite urlParts, currentDepth int, maxDepth int, siteMapData []string) []string {
+func doRunAux(pageToGet urlParts, rootSite urlParts, currentDepth int, maxDepth int, siteMapData map[string]bool) map[string]bool {
 
-	newDepth := currentDepth + 1
+	newPageUrlString := makeUrlString(handleRelativeLinks(pageToGet, rootSite))
 
-	if newDepth > maxDepth {
+	if currentDepth > maxDepth {
 		fmt.Println("Already navigated as far as desired, returning existing sitemap")
 		return siteMapData
 	}
@@ -76,13 +78,13 @@ func doRunAux(pageToGet urlParts, rootSite urlParts, currentDepth int, maxDepth 
 		return siteMapData
 	}
 
-	//If already in sitemap, return.
-	for _, v := range siteMapData {
-		if makeUrlString(pageToGet) == v {
-			fmt.Println("Already in map, returning")
-			return siteMapData
-		}
+	if siteMapData[newPageUrlString] {
+		fmt.Println("Already visited link, returning")
+		return siteMapData
 	}
+
+	fmt.Println(newPageUrlString, currentDepth)
+	siteMapData[newPageUrlString] = true
 
 	//Query site, and parse links. Returning sitemap
 	pageBody, getParseErr := getPage(makeUrlString(rootSite))
@@ -95,8 +97,8 @@ func doRunAux(pageToGet urlParts, rootSite urlParts, currentDepth int, maxDepth 
 
 	for _, v := range pageLinks {
 		if isLinkSameWebsite(v, rootSite) {
-			siteMapData = append(siteMapData, makeUrlString(v))
-			siteMapData = doRunAux(v, rootSite, 1, maxDepth, siteMapData)
+			newDepth := currentDepth + 1
+			siteMapData = doRunAux(v, rootSite, newDepth, maxDepth, siteMapData)
 
 		}
 	}
@@ -118,12 +120,14 @@ func parseArgs() (string, int) {
 // *********
 // XML Stuff
 // *********
-func buildSiteMapXml(links []string, shouldIndent bool) ([]byte, error) {
+func buildSiteMapXml(links map[string]bool, shouldIndent bool) ([]byte, error) {
 
 	xmlUrls := make([]xmlUrl, len(links))
 
-	for i, v := range links {
-		xmlUrls[i].Loc = v
+	i := 0
+	for urlString, _ := range links {
+		xmlUrls[0].Loc = urlString
+		i++
 	}
 
 	xmlData := urlSet{UrlSet: xmlUrls, Xmlns: namespaceConst}
@@ -199,6 +203,22 @@ func isLinkSameWebsite(linkData urlParts, site urlParts) bool {
 	}
 
 	return false
+}
+
+func handleRelativeLinks(linkData urlParts, rootSite urlParts) urlParts {
+	if linkData.domain == "" {
+		linkData.domain = rootSite.domain
+	}
+
+	if linkData.proto == "" {
+		linkData.proto = rootSite.proto
+	}
+
+	if linkData.resource == "" {
+		linkData.resource = "/"
+	}
+
+	return linkData
 }
 
 // **************
