@@ -111,24 +111,20 @@ func TestUrl12(t *testing.T) {
 func TestIsSame1(t *testing.T) {
 	link := urlParts{proto: "https", domain: "google.com", resource: "/some/other/resource?val=key"}
 	site := urlParts{proto: "https", domain: "google.com", resource: "/some/oasdsa?adsdsds=dasd"}
-	expectedUrl := "https://google.com/some/other/resource?val=key"
 
-	maybeUrl, isSameSite := isLinkSameWebsite(link, site)
+	isSameSite := isLinkSameWebsite(link, site)
 
 	assert.True(t, isSameSite, "Should have been same site, was not.")
-	assert.Equal(t, expectedUrl, maybeUrl, "URL returned was not formmated correctly")
 
 }
 
 func TestIsSame2(t *testing.T) {
 	link := urlParts{proto: "https", domain: "", resource: "/some/other/resource?val=key"}
 	site := urlParts{proto: "https", domain: "google.com", resource: "/some/oasdsa?adsdsds=dasd"}
-	expectedUrl := "https://google.com/some/other/resource?val=key"
 
-	maybeUrl, isSameSite := isLinkSameWebsite(link, site)
+	isSameSite := isLinkSameWebsite(link, site)
 
 	assert.True(t, isSameSite, "Should have been same site, was not.")
-	assert.Equal(t, expectedUrl, maybeUrl, "URL returned was not formmated correctly")
 }
 
 // *******************

@@ -33,30 +33,38 @@ type urlSet struct {
 // Main Funcs
 //*********
 func main() {
-	doRun()
+	rootUrl := "http://dcbfthwkrvlmznxs.neverssl.com/online"
+	doRun(noramliseAddress(rootUrl))
 }
 
-func doRun() {
-	//link.OpenSource()
-	//
+func doRun(rootSite urlParts) []urlParts {
 
-	pageBody, getParseErr := getPage("http://dcbfthwkrvlmznxs.neverssl.com/online")
+	pageBody, getParseErr := getPage(makeUrlString(rootSite))
 
 	if getParseErr != nil {
 		fmt.Println("Error getting first page:", getParseErr)
 		os.Exit(1)
 	}
 
-	//	"io/ioutil"
-	//body, _ := ioutil.ReadAll(pageBody)
+	var siteMap []urlParts
 
-	links := link.ExtractLinks(&pageBody)
+	pageLinks := getLinksInPage(pageBody)
 
-	fmt.Println(links)
+	//if val, ok := dict["foo"]; ok {
+	for _, v := range pageLinks {
+		if isLinkSameWebsite(v, rootSite) {
+			fmt.Println("same", v)
+		} else {
+			fmt.Println("not same", v)
+		}
+	}
 
-	//site, depth := parseArgs()
+	return siteMap
 
-	//fmt.Println("Mapping Site:", site, "To a depth of:", depth, "links")
+}
+
+func doRunAux() {
+
 }
 
 func parseArgs() (string, int) {
@@ -104,6 +112,11 @@ func buildSiteMapXml(links []string, shouldIndent bool) ([]byte, error) {
 // ***********************
 // URL/Address Formatting
 // ***********************
+func makeUrlString(parts urlParts) string {
+	formattedUrl := fmt.Sprintf("%v://%v%v", parts.proto, parts.domain, parts.resource)
+	return formattedUrl
+}
+
 func noramliseAddress(url string) urlParts {
 	//lower case it all
 	//take http/https if present, put in 'proto' value (take everything before ://)
@@ -136,29 +149,39 @@ func noramliseAddress(url string) urlParts {
 }
 
 /* Determines if a link is for the same (current trawling) website.
-* IF it is, then return a 'fully formatted string' of the link, which is valid for a sitemap. (also return right true)
+* IF it is, return true
  */
-func isLinkSameWebsite(linkData urlParts, site urlParts) (string, bool) {
-	//It's the same site IF
-	// domain value in linkData is "" (relative link)
-	// domain in linkData == domain in site
+func isLinkSameWebsite(linkData urlParts, site urlParts) bool {
 
 	if linkData.domain == site.domain {
-		formattedUrl := fmt.Sprintf("%v://%v%v", site.proto, site.domain, linkData.resource)
-		return formattedUrl, true
+		return true
 	}
 
 	if linkData.domain == "" {
-		formattedUrl := fmt.Sprintf("%v://%v%v", site.proto, site.domain, linkData.resource)
-		return formattedUrl, true
+		return true
 	}
 
-	return "", false
+	return false
 }
 
 // **************
 // Website Traversal
 // **************
+
+func getLinksInPage(pageData io.Reader) []urlParts {
+
+	links := link.ExtractLinks(&pageData)
+
+	formattedLinks := make([]urlParts, len(links))
+
+	for i, v := range links {
+		formattedLinks[i] = noramliseAddress(v.Href)
+	}
+
+	return formattedLinks
+
+}
+
 func getPage(pageUrl string) (io.Reader, error) {
 
 	resp, err := http.Get(pageUrl)
