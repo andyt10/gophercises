@@ -83,7 +83,7 @@ func doRunAux(pageToGet urlParts, rootSite urlParts, currentDepth int, maxDepth 
 		return siteMapData
 	}
 
-	fmt.Println(newPageUrlString, currentDepth)
+	fmt.Println("PAGE TO BE ADDED:", newPageUrlString, currentDepth)
 	siteMapData[newPageUrlString] = true
 
 	//Query site, and parse links. Returning sitemap
@@ -126,7 +126,7 @@ func buildSiteMapXml(links map[string]bool, shouldIndent bool) ([]byte, error) {
 
 	i := 0
 	for urlString, _ := range links {
-		xmlUrls[0].Loc = urlString
+		xmlUrls[i].Loc = urlString
 		i++
 	}
 
