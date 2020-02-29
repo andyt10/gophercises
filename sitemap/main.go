@@ -34,36 +34,75 @@ type urlSet struct {
 //*********
 func main() {
 	rootUrl := "http://dcbfthwkrvlmznxs.neverssl.com/online"
-	doRun(noramliseAddress(rootUrl))
-}
+	maxDepth := 2
+	siteMap, err := doRun(noramliseAddress(rootUrl), maxDepth)
 
-func doRun(rootSite urlParts) {
-
-	pageBody, getParseErr := getPage(makeUrlString(rootSite))
-
-	if getParseErr != nil {
-		fmt.Println("Error getting first page:", getParseErr)
+	if err != nil {
+		fmt.Println("ERROR in SiteMap building:", err)
 		os.Exit(1)
 	}
 
-	var siteMap []urlParts
-	pageLinks := getLinksInPage(pageBody)
-
-	//if val, ok := dict["foo"]; ok {
-	for _, v := range pageLinks {
-		if isLinkSameWebsite(v, rootSite) {
-			fmt.Println("same", v)
-			siteMap = append(siteMap, v)
-		} else {
-			fmt.Println("not same", v)
-		}
-	}
+	fmt.Println(string(siteMap))
 
 }
 
-func doRunAux() []urlParts {
+func doRun(rootSite urlParts, maxDepth int) (string, error) {
 
-	return nil
+	var siteMapData []string
+
+	siteMapData = doRunAux(rootSite, rootSite, 1, maxDepth, siteMapData)
+	siteMap, mapBuildErr := buildSiteMapXml(siteMapData, true)
+
+	if mapBuildErr != nil {
+		fmt.Println("Unable to build map for site data")
+		return "", mapBuildErr
+	}
+
+	return string(siteMap), nil
+
+}
+
+func doRunAux(pageToGet urlParts, rootSite urlParts, currentDepth int, maxDepth int, siteMapData []string) []string {
+
+	newDepth := currentDepth + 1
+
+	if newDepth > maxDepth {
+		fmt.Println("Already navigated as far as desired, returning existing sitemap")
+		return siteMapData
+	}
+
+	if !isLinkSameWebsite(pageToGet, rootSite) {
+		fmt.Println("Link is not for same site, not performing GET call")
+		return siteMapData
+	}
+
+	//If already in sitemap, return.
+	for _, v := range siteMapData {
+		if makeUrlString(pageToGet) == v {
+			fmt.Println("Already in map, returning")
+			return siteMapData
+		}
+	}
+
+	//Query site, and parse links. Returning sitemap
+	pageBody, getParseErr := getPage(makeUrlString(rootSite))
+	pageLinks := getLinksInPage(pageBody)
+
+	if getParseErr != nil {
+		fmt.Println("Error getting page:", makeUrlString(pageToGet), ":", getParseErr)
+		return siteMapData
+	}
+
+	for _, v := range pageLinks {
+		if isLinkSameWebsite(v, rootSite) {
+			siteMapData = append(siteMapData, makeUrlString(v))
+			siteMapData = doRunAux(v, rootSite, 1, maxDepth, siteMapData)
+
+		}
+	}
+
+	return siteMapData
+
 }
 
 func parseArgs() (string, int) {
@@ -88,7 +127,6 @@ func buildSiteMapXml(links []string, shouldIndent bool) ([]byte, error) {
 	}
 
 	xmlData := urlSet{UrlSet: xmlUrls, Xmlns: namespaceConst}
-	fmt.Println(xmlData)
 
 	var output []byte
 	var marshalError error
