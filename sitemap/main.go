@@ -37,7 +37,7 @@ func main() {
 	doRun(noramliseAddress(rootUrl))
 }
 
-func doRun(rootSite urlParts) []urlParts {
+func doRun(rootSite urlParts) {
 
 	pageBody, getParseErr := getPage(makeUrlString(rootSite))
 
@@ -47,24 +47,23 @@ func doRun(rootSite urlParts) []urlParts {
 	}
 
 	var siteMap []urlParts
-
 	pageLinks := getLinksInPage(pageBody)
 
 	//if val, ok := dict["foo"]; ok {
 	for _, v := range pageLinks {
 		if isLinkSameWebsite(v, rootSite) {
 			fmt.Println("same", v)
+			siteMap = append(siteMap, v)
 		} else {
 			fmt.Println("not same", v)
 		}
 	}
 
-	return siteMap
-
 }
 
-func doRunAux() {
+func doRunAux() []urlParts {
 
+	return nil
 }
 
 func parseArgs() (string, int) {
