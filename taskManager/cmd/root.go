@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"cor_gophercises/taskManager/src"
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
@@ -13,6 +14,7 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() error {
+	src.InitDb("")
 	return rootCmd.Execute()
 }
 
