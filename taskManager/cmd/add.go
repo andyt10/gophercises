@@ -10,6 +10,11 @@ var addCmd = &cobra.Command{
 	Short: "Add task",
 	Long:  "Add a new task",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("ADD TASKS")
+		if len(args) != 1 {
+			errorExit("Only 1 argument should be passed to CMD")
+		}
+
+		task := args[0]
+		fmt.Printf("Adding new task: %v\n", task)
 	},
 }

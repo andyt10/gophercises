@@ -1,6 +1,10 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"fmt"
+	"github.com/spf13/cobra"
+	"os"
+)
 
 var rootCmd = &cobra.Command{
 	Use:   "How To",
@@ -16,4 +20,9 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(doCmd)
 	rootCmd.AddCommand(addCmd)
+}
+
+func errorExit(msg string) {
+	fmt.Println("Error:", msg)
+	os.Exit(1)
 }
