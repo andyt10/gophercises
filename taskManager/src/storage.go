@@ -3,11 +3,14 @@ package src
 import bolt "go.etcd.io/bbolt"
 
 import (
+	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"os"
 )
 
-const defaultLoc string = "/tmp"
+const defaultFolder string = "/tmp"
+const defaultFileName string = "data.db"
 
 const bucketName string = "TASKS"
 
@@ -15,7 +18,7 @@ var fileLoc string
 
 func InitDb(fileLocParam string) {
 	if fileLocParam == "" {
-		fileLoc = defaultLoc
+		fileLoc = defaultFolder + "/" + defaultFileName
 		return
 	}
 
@@ -47,17 +50,47 @@ func GetAll() []ListItem {
 	db := openDb()
 	defer db.Close()
 
-	db.Update(func(tx *bolt.Tx) error {
-		//figure out what the type of a bucket is, will probably need to serailise the ListItem struct somehow. Time for sleep.
-		b := tx.Bucket([]byte("MyBucket"))
-		err := b.Put([]byte("answer"), []byte("42"))
-		return err
+	db.View(func(tx *bolt.Tx) error {
+		// Assume bucket exists and has keys
+		b := tx.Bucket([]byte(bucketName))
+
+		b.ForEach(func(k, v []byte) error {
+			kInt := binary.BigEndian.Uint64(k)
+			fmt.Printf("key=%v, value=%s\n", kInt, v)
+			return nil
+		})
+		return nil
 	})
 
 	return nil
 }
 
-func Add(itemData string) {
+func Add(itemData ListItem) error {
+
+	db := openDb()
+	defer db.Close()
+
+	db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucketName))
+
+		id, _ := b.NextSequence()
+
+		buf, err := json.Marshal(itemData)
+		if err != nil {
+			return err
+		}
+
+		// Persist bytes to users bucket.
+		return b.Put(itob(int(id)), buf)
+	})
+
+	return nil
+}
+
+func itob(v int) []byte {
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, uint64(v))
+	return b
 }
 
 func Remove(itemIndex int) {

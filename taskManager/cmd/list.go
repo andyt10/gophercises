@@ -15,5 +15,6 @@ var listCmd = &cobra.Command{
 
 		tasks := src.GetAll()
 		//loop and pretty print tasks
+		fmt.Println(tasks)
 	},
 }
