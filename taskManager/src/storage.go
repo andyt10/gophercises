@@ -53,7 +53,7 @@ func GetAll() []ListItemEntry {
 
 	var itemList []ListItemEntry
 	db.View(func(tx *bolt.Tx) error {
-		// Assume bucket exists and has keys
+
 		b := tx.Bucket([]byte(bucketName))
 
 		b.ForEach(func(k, v []byte) error {
