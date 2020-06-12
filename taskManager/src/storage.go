@@ -18,6 +18,7 @@ var fileLoc string
 
 func InitDb(fileLocParam string) {
 	if fileLocParam == "" {
+
 		fileLoc = defaultFolder + "/" + defaultFileName
 		return
 	}
@@ -45,24 +46,37 @@ func openDb() *bolt.DB {
 	return db
 }
 
-func GetAll() []ListItem {
+func GetAll() []ListItemEntry {
 
 	db := openDb()
 	defer db.Close()
 
+	var itemList []ListItemEntry
 	db.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte(bucketName))
 
 		b.ForEach(func(k, v []byte) error {
-			kInt := binary.BigEndian.Uint64(k)
-			fmt.Printf("key=%v, value=%s\n", kInt, v)
+
+			var thisTask ListItemEntry
+			err := json.Unmarshal(v, &thisTask.Data)
+			thisTask.Index = btoi(k)
+
+			if err != nil {
+				fmt.Println(err)
+				return err
+			}
+
+			itemList = append(itemList, thisTask)
+
 			return nil
 		})
+
+		//eventually maybe return an error if one of forEach fails
 		return nil
 	})
 
-	return nil
+	return itemList
 }
 
 func Add(itemData ListItem) error {
@@ -87,11 +101,37 @@ func Add(itemData ListItem) error {
 	return nil
 }
 
+//not sure why docs convert to bigendian for bbolt. Need to figure out.
+// ^ This made sense when I wasn't so sleppy.
 func itob(v int) []byte {
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, uint64(v))
 	return b
 }
 
-func Remove(itemIndex int) {
+func btoi(b []byte) int {
+	i := int(binary.BigEndian.Uint64(b))
+	return i
+}
+
+//Update Task
+//Returns nil if no error, error type if problem removing Task.
+func Update(itemEntry ListItemEntry) error {
+
+	db := openDb()
+	defer db.Close()
+
+	res := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucketName))
+
+		buf, err := json.Marshal(itemEntry.Data)
+		if err != nil {
+			return err
+		}
+
+		return b.Put(itob(itemEntry.Index), buf)
+	})
+
+	return res
+
 }

@@ -4,6 +4,7 @@ import (
 	"cor_gophercises/taskManager/src"
 	"fmt"
 	"github.com/spf13/cobra"
+	"time"
 )
 
 var addCmd = &cobra.Command{
@@ -17,9 +18,10 @@ var addCmd = &cobra.Command{
 
 		task := src.ListItem{
 			Item:   args[0],
+			Added:  int(time.Now().Unix()),
 			DoneAt: 0,
 		}
-		fmt.Printf("Trying to add task: %v \n", task)
+		fmt.Printf("Adding the following task: %v \n", task.Item)
 		src.Add(task)
 	},
 }
